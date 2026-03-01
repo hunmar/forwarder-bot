@@ -21,7 +21,9 @@ const response = await fetch(setWebhookEndpoint, {
   },
   body: JSON.stringify({
     url: config.webhookUrl,
-    secret_token: config.telegramSecretToken
+    secret_token: config.telegramSecretToken,
+    allowed_updates: ["message", "channel_post"],
+    drop_pending_updates: true
   })
 });
 

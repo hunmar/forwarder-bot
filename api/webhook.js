@@ -4,14 +4,16 @@ import { logger } from "../src/logger.js";
 
 const bot = createBot();
 
-// bot.init() calls Telegram's getMe to populate botInfo,
-// which grammY requires before handleUpdate() can process updates.
+let initDone = false;
 let initPromise = null;
 
 function ensureInitialized() {
+  if (initDone) {
+    return Promise.resolve();
+  }
   if (!initPromise) {
-    logger.info("bot_init_started");
     initPromise = bot.init().then(() => {
+      initDone = true;
       logger.info("bot_init_completed", {
         botId: bot.botInfo.id,
         botUsername: bot.botInfo.username
@@ -28,11 +30,6 @@ function ensureInitialized() {
   return initPromise;
 }
 
-logger.info("webhook_handler_initialized", {
-  hasSecretToken: Boolean(config.telegramSecretToken),
-  webhookUrlConfigured: Boolean(config.webhookUrl)
-});
-
 export default async function handler(req, res) {
   const requestMeta = {
     method: req.method,
@@ -46,7 +43,12 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") {
     logger.info("webhook_non_post", requestMeta);
-    res.status(200).send("ok");
+    res.status(200).json({
+      ok: true,
+      botInitialized: initDone,
+      hasSecretToken: Boolean(config.telegramSecretToken),
+      webhookUrlConfigured: Boolean(config.webhookUrl)
+    });
     return;
   }
 
@@ -63,10 +65,24 @@ export default async function handler(req, res) {
   }
 
   const updateId = req.body?.update_id;
+  const updateType = req.body
+    ? Object.keys(req.body).find((k) => k !== "update_id")
+    : undefined;
+  const chatId = req.body?.message?.chat?.id ?? req.body?.channel_post?.chat?.id;
+  const chatType = req.body?.message?.chat?.type ?? req.body?.channel_post?.chat?.type;
+  const text = req.body?.message?.text ?? req.body?.channel_post?.text;
+
+  logger.info("webhook_update_received", {
+    ...requestMeta,
+    updateId,
+    updateType,
+    chatId,
+    chatType,
+    text
+  });
 
   try {
     await ensureInitialized();
-    logger.info("webhook_update_received", { ...requestMeta, updateId });
     await bot.handleUpdate(req.body);
     logger.info("webhook_update_processed", { ...requestMeta, updateId, statusCode: 200 });
     res.status(200).send("ok");
@@ -74,9 +90,10 @@ export default async function handler(req, res) {
     logger.error("webhook_error", {
       ...requestMeta,
       updateId,
+      updateType,
       message: error?.message,
       stack: error?.stack
     });
-    res.status(500).send("error");
+    res.status(200).send("ok");
   }
 }
