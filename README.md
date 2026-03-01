@@ -105,6 +105,8 @@ vercel env add WEBHOOK_URL production
 
 Приложение пишет структурированные JSON-логи в `stdout/stderr`, и они автоматически попадают в **Vercel Logs**.
 
+- lifecycle старта: `bot_initialized`, `webhook_handler_initialized`, `starting_polling_mode`
+- lifecycle настройки вебхука (скрипт): `set_webhook_started`, `set_webhook_response`, `webhook_info`, `set_webhook_finished`
 - webhook входящие события: `webhook_update_received`
 - успешные пересылки: `message_forwarded`
 - неуспешные проверки секрета: `webhook_unauthorized`

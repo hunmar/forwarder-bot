@@ -6,6 +6,12 @@ import { logger } from "./logger.js";
 export const createBot = () => {
   const bot = new Bot(config.botToken);
 
+  logger.info("bot_initialized", {
+    sourceChatId: config.sourceChatId,
+    targetChatId: config.targetChatId,
+    forwardHashtag: config.forwardHashtag
+  });
+
   bot.command("id", async (ctx) => {
     logger.info("id_command_called", {
       chatId: ctx.chat.id,

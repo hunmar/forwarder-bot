@@ -4,6 +4,11 @@ import { logger } from "../src/logger.js";
 
 const bot = createBot();
 
+logger.info("webhook_handler_initialized", {
+  hasSecretToken: Boolean(config.telegramSecretToken),
+  webhookUrlConfigured: Boolean(config.webhookUrl)
+});
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     logger.debug("webhook_non_post", { method: req.method });
