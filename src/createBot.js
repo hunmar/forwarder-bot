@@ -6,6 +6,35 @@ import { logger } from "./logger.js";
 export const createBot = () => {
   const bot = new Bot(config.botToken);
 
+  const maybeForwardMessage = async (message, chat) => {
+    if (chat.id !== config.sourceChatId) {
+      logger.debug("message_skipped_wrong_chat", {
+        chatId: chat.id,
+        sourceChatId: config.sourceChatId,
+        messageId: message.message_id
+      });
+      return;
+    }
+
+    if (!messageHasConfiguredHashtag(message)) {
+      logger.debug("message_skipped_missing_hashtag", {
+        chatId: chat.id,
+        messageId: message.message_id,
+        expectedHashtag: config.forwardHashtag
+      });
+      return;
+    }
+
+    await bot.api.copyMessage(config.targetChatId, chat.id, message.message_id);
+
+    logger.info("message_forwarded", {
+      fromChatId: chat.id,
+      toChatId: config.targetChatId,
+      messageId: message.message_id,
+      hashtag: config.forwardHashtag
+    });
+  };
+
   const replyWithChatId = async (ctx) => {
     const chatType = ctx.chat?.type;
 
@@ -49,32 +78,11 @@ export const createBot = () => {
   });
 
   bot.on("message", async (ctx) => {
-    if (ctx.chat.id !== config.sourceChatId) {
-      logger.debug("message_skipped_wrong_chat", {
-        chatId: ctx.chat.id,
-        sourceChatId: config.sourceChatId,
-        messageId: ctx.msg.message_id
-      });
-      return;
-    }
+    await maybeForwardMessage(ctx.msg, ctx.chat);
+  });
 
-    if (!messageHasConfiguredHashtag(ctx.msg)) {
-      logger.debug("message_skipped_missing_hashtag", {
-        chatId: ctx.chat.id,
-        messageId: ctx.msg.message_id,
-        expectedHashtag: config.forwardHashtag
-      });
-      return;
-    }
-
-    await ctx.api.copyMessage(config.targetChatId, ctx.chat.id, ctx.msg.message_id);
-
-    logger.info("message_forwarded", {
-      fromChatId: ctx.chat.id,
-      toChatId: config.targetChatId,
-      messageId: ctx.msg.message_id,
-      hashtag: config.forwardHashtag
-    });
+  bot.on("channel_post", async (ctx) => {
+    await maybeForwardMessage(ctx.channelPost, ctx.chat);
   });
 
   bot.catch((error) => {
