@@ -6,19 +6,46 @@ import { logger } from "./logger.js";
 export const createBot = () => {
   const bot = new Bot(config.botToken);
 
+  const replyWithChatId = async (ctx) => {
+    const chatType = ctx.chat?.type;
+
+    logger.info("id_command_called", {
+      chatId: ctx.chat?.id,
+      chatType,
+      userId: ctx.from?.id
+    });
+
+    await ctx.reply(`Chat ID: ${ctx.chat.id}`);
+  };
+
   logger.info("bot_initialized", {
     sourceChatId: config.sourceChatId,
     targetChatId: config.targetChatId,
     forwardHashtag: config.forwardHashtag
   });
 
-  bot.command("id", async (ctx) => {
-    logger.info("id_command_called", {
-      chatId: ctx.chat.id,
+  bot.command("start", async (ctx) => {
+    logger.info("start_command_called", {
+      chatId: ctx.chat?.id,
+      chatType: ctx.chat?.type,
       userId: ctx.from?.id
     });
 
-    await ctx.reply(`Chat ID: ${ctx.chat.id}`);
+    await ctx.reply(
+      [
+        "Привет! Я пересылаю сообщения с нужным хэштегом.",
+        "",
+        "Команды:",
+        "/id — показать ID текущего чата",
+        "/start — показать эту подсказку"
+      ].join("\n")
+    );
+  });
+
+  bot.command("id", replyWithChatId);
+
+  bot.hears(/^\/id(?:@\w+)?(?:\s|$)/i, async (ctx) => {
+    await replyWithChatId(ctx);
   });
 
   bot.on("message", async (ctx) => {
