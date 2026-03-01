@@ -5,6 +5,10 @@ import { messageHasConfiguredHashtag } from "./forwardLogic.js";
 export const createBot = () => {
   const bot = new Bot(config.botToken);
 
+  bot.command("id", async (ctx) => {
+    await ctx.reply(`Chat ID: ${ctx.chat.id}`);
+  });
+
   bot.on("message", async (ctx) => {
     if (ctx.chat.id !== config.sourceChatId) {
       return;
