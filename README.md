@@ -100,6 +100,37 @@ vercel env add WEBHOOK_URL production
 
 Повторите для `preview`, если нужно изолировать тестовую среду.
 
+
+## Логи приложения в Vercel Logs
+
+Приложение пишет структурированные JSON-логи в `stdout/stderr`, и они автоматически попадают в **Vercel Logs**.
+
+- webhook входящие события: `webhook_update_received`
+- успешные пересылки: `message_forwarded`
+- неуспешные проверки секрета: `webhook_unauthorized`
+- ошибки бота/вебхука: `bot_error`, `webhook_error`
+
+### Как смотреть
+
+- Vercel Dashboard → `Project` → `Logs`
+- либо CLI: `vercel logs <deployment-url>`
+
+### Управление уровнем логов
+
+Переменная окружения `LOG_LEVEL`:
+
+- `debug` — подробные диагностические логи
+- `info` — стандартный рабочий уровень (по умолчанию)
+- `warn` — только предупреждения и ошибки
+- `error` — только ошибки
+
+Рекомендуется:
+
+- **Production**: `info`
+- **Preview/Debug**: `debug`
+
+> В логах не выводится токен бота; чувствительные значения не логируются.
+
 ## Автоматическая выкладка в Vercel (GitHub Actions)
 
 В репозитории добавлен workflow `.github/workflows/vercel-deploy.yml`:
