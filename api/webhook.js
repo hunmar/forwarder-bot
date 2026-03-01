@@ -4,6 +4,30 @@ import { logger } from "../src/logger.js";
 
 const bot = createBot();
 
+// bot.init() calls Telegram's getMe to populate botInfo,
+// which grammY requires before handleUpdate() can process updates.
+let initPromise = null;
+
+function ensureInitialized() {
+  if (!initPromise) {
+    logger.info("bot_init_started");
+    initPromise = bot.init().then(() => {
+      logger.info("bot_init_completed", {
+        botId: bot.botInfo.id,
+        botUsername: bot.botInfo.username
+      });
+    }).catch((error) => {
+      logger.error("bot_init_failed", {
+        message: error?.message,
+        stack: error?.stack
+      });
+      initPromise = null;
+      throw error;
+    });
+  }
+  return initPromise;
+}
+
 logger.info("webhook_handler_initialized", {
   hasSecretToken: Boolean(config.telegramSecretToken),
   webhookUrlConfigured: Boolean(config.webhookUrl)
@@ -41,6 +65,7 @@ export default async function handler(req, res) {
   const updateId = req.body?.update_id;
 
   try {
+    await ensureInitialized();
     logger.info("webhook_update_received", { ...requestMeta, updateId });
     await bot.handleUpdate(req.body);
     logger.info("webhook_update_processed", { ...requestMeta, updateId, statusCode: 200 });

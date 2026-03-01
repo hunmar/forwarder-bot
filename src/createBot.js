@@ -41,7 +41,8 @@ export const createBot = () => {
     logger.info("id_command_called", {
       chatId: ctx.chat?.id,
       chatType,
-      userId: ctx.from?.id
+      userId: ctx.from?.id,
+      text: ctx.msg?.text
     });
 
     await ctx.reply(`Chat ID: ${ctx.chat.id}`);
@@ -57,7 +58,8 @@ export const createBot = () => {
     logger.info("start_command_called", {
       chatId: ctx.chat?.id,
       chatType: ctx.chat?.type,
-      userId: ctx.from?.id
+      userId: ctx.from?.id,
+      text: ctx.msg?.text
     });
 
     await ctx.reply(
