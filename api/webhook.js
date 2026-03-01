@@ -10,8 +10,14 @@ logger.info("webhook_handler_initialized", {
 });
 
 export default async function handler(req, res) {
+  logger.info("webhook_request_received", {
+    method: req.method,
+    hasBody: Boolean(req.body),
+    userAgent: req.headers["user-agent"]
+  });
+
   if (req.method !== "POST") {
-    logger.debug("webhook_non_post", { method: req.method });
+    logger.info("webhook_non_post", { method: req.method });
     res.status(200).send("ok");
     return;
   }
