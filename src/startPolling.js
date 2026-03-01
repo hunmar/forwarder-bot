@@ -10,4 +10,10 @@ logger.info("starting_polling_mode", {
   forwardHashtag: config.forwardHashtag
 });
 
+await bot.api.deleteWebhook({
+  drop_pending_updates: false
+});
+
+logger.info("polling_webhook_disabled");
+
 await bot.start();
