@@ -43,6 +43,42 @@ npm run set-webhook
 
 После этого Telegram начнёт присылать апдейты в Vercel-функцию `api/webhook`.
 
+## Автоматическая выкладка в Vercel (GitHub Actions)
+
+В репозитории добавлен workflow `.github/workflows/vercel-deploy.yml`:
+
+- на `pull_request` — собирает и выкладывает **Preview**
+- на `push` в `main` — выкладывает **Production**
+
+### Какие секреты нужно добавить в GitHub
+
+В `Settings → Secrets and variables → Actions` добавьте:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+### Какой именно токен нужен
+
+Нужен **Vercel Personal Access Token**:
+
+1. Vercel → `Settings` → `Tokens`
+2. `Create Token`
+3. Скопируйте значение в GitHub Secret `VERCEL_TOKEN`
+
+Токен должен иметь доступ к проекту, который вы деплоите (в нужной Team/Scope).
+
+### Где взять ORG_ID и PROJECT_ID
+
+Самый простой путь локально:
+
+```bash
+npx vercel link
+```
+
+После линковки появится файл `.vercel/project.json` с `orgId` и `projectId`.
+Их положите в `VERCEL_ORG_ID` и `VERCEL_PROJECT_ID`.
+
 ## Важные детали
 
 - `FORWARD_HASHTAG` можно задавать как `forward` или `#forward`.
