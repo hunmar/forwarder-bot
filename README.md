@@ -107,7 +107,7 @@ vercel env add WEBHOOK_URL production
 
 - lifecycle старта: `bot_initialized`, `webhook_handler_initialized`, `starting_polling_mode`
 - lifecycle настройки вебхука (скрипт): `set_webhook_started`, `set_webhook_response`, `webhook_info`, `set_webhook_finished`
-- webhook входящие события: `webhook_update_received`
+- webhook входящие события: `webhook_request_received`, `webhook_update_received`, `webhook_update_processed`
 - успешные пересылки: `message_forwarded`
 - неуспешные проверки секрета: `webhook_unauthorized`
 - ошибки бота/вебхука: `bot_error`, `webhook_error`
@@ -116,6 +116,16 @@ vercel env add WEBHOOK_URL production
 
 - Vercel Dashboard → `Project` → `Logs`
 - либо CLI: `vercel logs <deployment-url>`
+
+
+### Быстрый smoke-test логов в Vercel
+
+После деплоя откройте в браузере:
+
+- `https://<your-project>.vercel.app/api/webhook`
+
+Эндпоинт вернёт `ok` (GET), и в логах должны появиться события
+`webhook_request_received` + `webhook_non_post`. Это подтверждает, что функция вызывается и логи доходят до Vercel.
 
 ### Управление уровнем логов
 
